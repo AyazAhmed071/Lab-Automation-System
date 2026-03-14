@@ -239,8 +239,75 @@ $failed_tests = $conn->query("SELECT COUNT(*) as count FROM testing_records WHER
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title fw-bold mb-0 text-dark">
+                        <i class="fas fa-chart-pie me-2 text-primary"></i>Test Results Analysis
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="testChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const total = <?php echo ($passed_tests + $failed_tests); ?>;
+            const passed = <?php echo $passed_tests; ?>;
+            const failed = <?php echo $failed_tests; ?>;
 
+            // Percentage Calculation
+            const passedPercent = total > 0 ? ((passed / total) * 100).toFixed(1) : 0;
+            const failedPercent = total > 0 ? ((failed / total) * 100).toFixed(1) : 0;
+
+            const ctx = document.getElementById('testChart').getContext('2d');
+            const testChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    // Labels mein hi percentage daal di taake hamesha nazar aaye
+                    labels: [`Passed (${passedPercent}%)`, `Failed (${failedPercent}%)`],
+                    datasets: [{
+                        data: [passed, failed],
+                        backgroundColor: ['#198754', '#dc3545'],
+                        borderWidth: 2,
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    let value = context.raw || 0;
+                                    return `${label}: ${value} Tests`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        });
+    </script>
 
 
     <?php include 'footer.php'; ?>
