@@ -1,0 +1,126 @@
+/* Custom styles for Lab Automation System */
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --sidebar-bg: #212529;
+    --sidebar-text: #fff;
+    --content-bg: #f8f9fa;
+}
+
+body {
+    background-color: var(--content-bg);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Sidebar styling */
+#sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    min-height: 100vh;
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    transition: all 0.3s;
+}
+
+#sidebar.active {
+    margin-left: -250px;
+}
+
+#sidebar .sidebar-header {
+    padding: 20px;
+    background-color: #1a1e21;
+}
+
+#sidebar ul.components {
+    padding: 20px 0;
+}
+
+#sidebar ul li a {
+    padding: 10px 20px;
+    font-size: 1.1em;
+    display: block;
+    color: var(--sidebar-text);
+    text-decoration: none;
+}
+
+#sidebar ul li a:hover {
+    background-color: #343a40;
+}
+
+#sidebar ul li.active>a {
+    background-color: var(--primary-color);
+}
+
+#sidebar ul li a i {
+    margin-right: 10px;
+}
+
+/* Main content styling */
+#content {
+    width: 100%;
+    padding: 20px;
+    transition: all 0.3s;
+}
+
+/* Navbar styling */
+.navbar {
+    padding: 15px 10px;
+    background: #fff;
+    border: none;
+    border-radius: 0;
+    margin-bottom: 40px;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Dashboard cards */
+.card-stats {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+}
+
+.card-stats:hover {
+    transform: translateY(-5px);
+}
+
+.card-stats .card-body {
+    padding: 20px;
+}
+
+.card-stats .icon-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+/* Login page styling */
+.login-page {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e9ecef;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 400px;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
+
+/* Tables */
+.table-container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
