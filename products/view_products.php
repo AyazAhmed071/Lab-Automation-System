@@ -21,14 +21,17 @@ $products = $conn->query("SELECT * FROM products ORDER BY created_at DESC");
 
 <style>
     /* Dashboard Theme Match */
-    :root { --ke-blue: #004a99; --ke-yellow: #ffc20e; }
-    
+    :root {
+        --ke-blue: #004a99;
+        --ke-yellow: #ffc20e;
+    }
+
     .page-header {
         border-left: 5px solid var(--ke-yellow);
         padding-left: 15px;
         margin-bottom: 30px;
     }
-    
+
     .page-title {
         color: var(--ke-blue);
         font-weight: 700;
@@ -38,7 +41,7 @@ $products = $conn->query("SELECT * FROM products ORDER BY created_at DESC");
     .table-container {
         background: white;
         border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
         overflow: hidden;
         border: none;
     }
@@ -152,8 +155,8 @@ $products = $conn->query("SELECT * FROM products ORDER BY created_at DESC");
                                     <a href="edit_product.php?id=<?php echo $row['id']; ?>" class="btn btn-outline-primary action-btn me-1" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="view_products.php?delete=<?php echo $row['id']; ?>" class="btn btn-outline-danger action-btn" 
-                                       onclick="return confirm('Are you sure you want to delete this product?')" title="Delete">
+                                    <a href="view_products.php?delete=<?php echo $row['id']; ?>" class="btn btn-outline-danger action-btn"
+                                        onclick="return confirm('Are you sure you want to delete this product?')" title="Delete">
                                         <i class="fas fa-trash"></i>
                                     </a>
                                 </td>
@@ -172,7 +175,3 @@ $products = $conn->query("SELECT * FROM products ORDER BY created_at DESC");
         </div>
     </div>
 </div>
-
-<?php include '../footer.php'; ?>
-
-
