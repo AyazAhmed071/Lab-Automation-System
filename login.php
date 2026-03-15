@@ -152,45 +152,78 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             font-size: 0.85rem;
             color: rgba(255, 255, 255, 0.7);
         }
+
+        .shake {
+            animation: shake-animation 0.5s ease-in-out;
+        }
+
+        @keyframes shake-animation {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20%,
+            60% {
+                transform: translateX(-10px);
+            }
+
+            40%,
+            80% {
+                transform: translateX(10px);
+            }
+        }
     </style>
 </head>
 
 <body>
 
-
-    <div class="login-card">
+    <div class="login-card <?php echo $error ? 'shake' : ''; ?>">
         <img src="assets/images/logo.png" alt="K-Electric Logo" class="login-logo">
+
+        <?php if ($error): ?>
+            <div class="alert alert-danger d-flex align-items-center mb-4" role="alert"
+                style="background: rgba(220, 53, 69, 0.2); border: 1px solid #dc3545; color: white; border-radius: 10px; font-size: 0.85rem;">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <div><?php echo $error; ?></div>
+            </div>
+        <?php endif; ?>
 
         <form action="" method="POST">
             <div class="mb-3 text-start">
-                <label for="username" class="form-label">Username</label>
+                <label for="username" class="form-label text-uppercase small" style="letter-spacing:1px;">Username</label>
                 <div class="input-group">
                     <span class="input-group-text bg-transparent border-end-0 text-white" style="border: 1px solid rgba(255,255,255,0.3); border-radius: 10px 0 0 10px;">
-                        <i class="fas fa-user"></i>
+                        <i class="fas fa-user-shield"></i>
                     </span>
-                    <input type="text" name="username" id="username" class="form-control border-start-0" placeholder="Enter username" required style="border-radius: 0 10px 10px 0 !important;">
+                    <input type="text" name="username" id="username" class="form-control border-start-0"
+                        placeholder="Admin Username" required style="border-radius: 0 10px 10px 0 !important;"
+                        value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>">
                 </div>
             </div>
 
             <div class="mb-4 text-start">
-                <label for="password" class="form-label">Password</label>
+                <label for="password" class="form-label text-uppercase small" style="letter-spacing:1px;">Password</label>
                 <div class="input-group">
                     <span class="input-group-text bg-transparent border-end-0 text-white" style="border: 1px solid rgba(255,255,255,0.3); border-radius: 10px 0 0 10px;">
-                        <i class="fas fa-lock"></i>
+                        <i class="fas fa-key"></i>
                     </span>
-                    <input type="password" name="password" id="password" class="form-control border-start-0" placeholder="Enter password" required style="border-radius: 0 10px 10px 0 !important;">
+                    <input type="password" name="password" id="password" class="form-control border-start-0"
+                        placeholder="••••••••" required style="border-radius: 0 10px 10px 0 !important;">
                 </div>
             </div>
 
-            <button type="submit" name="login" class="btn-ke">
-                <i class="fas fa-sign-in-alt me-2"></i> LOG IN
+            <button type="submit" class="btn-ke shadow-sm">
+                <i class="fas fa-bolt me-2"></i> Secure Login
             </button>
         </form>
 
         <div class="login-footer">
-            <p>&copy; 2026 K-Electric MTL Unit <br> All Rights Reserved</p>
+            <p>&copy; 2026 K-Electric MTL Unit <br> <span class="small opacity-50">Authorized Personnel Only</span></p>
         </div>
     </div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
