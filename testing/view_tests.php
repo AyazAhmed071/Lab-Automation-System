@@ -1,112 +1,227 @@
 <?php
+include '../config/db.php';
 include '../header.php';
 
-// Fetch all tests
+// Fetch all tests with latest on top
 $tests = $conn->query("SELECT * FROM testing_records ORDER BY created_at DESC");
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Testing Records</h2>
-    <a href="add_test.php" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Add Testing Record</a>
-</div>
+<style>
+    :root {
+        --ke-blue: #004a99;
+        --ke-yellow: #ffc20e;
+    }
 
-<div class="table-container">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>Test ID</th>
-                    <th>Product ID</th>
-                    <th>Test Type</th>
-                    <th>Department</th>
-                    <th>Result</th>
-                    <th>Status</th>
-                    <th>Tester</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if ($tests->num_rows > 0): ?>
-                    <?php while ($row = $tests->fetch_assoc()): ?>
-                        <tr>
-                            <td><strong><?php echo $row['test_id']; ?></strong></td>
-                            <td><?php echo $row['product_id']; ?></td>
-                            <td><?php echo $row['test_type']; ?></td>
-                            <td><?php echo $row['testing_department']; ?></td>
-                            <td>
-                                <span class="badge <?php echo ($row['result'] == 'Pass') ? 'bg-success' : 'bg-danger'; ?>">
-                                    <?php echo $row['result']; ?>
-                                </span>
-                            </td>
-                            <td>
-                                <span class="badge <?php echo ($row['result'] == 'Pass') ? 'bg-info' : 'bg-warning text-dark'; ?>">
-                                    <?php echo $row['status']; ?>
-                                </span>
-                            </td>
-                            <td><?php echo $row['tester_name']; ?></td>
-                            <td><?php echo date('d M, Y', strtotime($row['testing_date'])); ?></td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#viewModal<?php echo $row['id']; ?>">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                
-                                <!-- View Modal -->
-                                <div class="modal fade" id="viewModal<?php echo $row['id']; ?>" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog modal-lg">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Test Details: <?php echo $row['test_id']; ?></h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-3">
-                                                        <strong>Product ID:</strong> <?php echo $row['product_id']; ?>
+    body {
+        background-color: #f4f7f9;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .test-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        background: white;
+    }
+
+    .test-header {
+        background: var(--ke-blue);
+        color: white;
+        padding: 20px 30px;
+        border-bottom: 5px solid var(--ke-yellow);
+    }
+
+    .table thead th {
+        background-color: #f8f9fa;
+        color: var(--ke-blue);
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #eee;
+        padding: 15px;
+    }
+
+    .table tbody td {
+        padding: 15px;
+        border-bottom: 1px solid #f1f1f1;
+        vertical-align: middle;
+        color: #444;
+    }
+
+    /* Status Tags to match add_test logic */
+    .status-badge {
+        font-weight: 700;
+        font-size: 0.7rem;
+        padding: 5px 12px;
+        border-radius: 50px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .status-approved { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+    .status-rejected { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+    .status-review { background: #fff3e0; color: #ef6c00; border: 1px solid #ffe0b2; }
+
+    .test-id-tag {
+        font-family: 'Consolas', monospace;
+        color: var(--ke-blue);
+        font-weight: 700;
+        background: #f0f4f8;
+        padding: 4px 8px;
+        border-radius: 5px;
+    }
+
+    .btn-action {
+        width: 35px;
+        height: 35px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        transition: 0.3s;
+        border: 1px solid #eee;
+        background: white;
+        color: var(--ke-blue);
+    }
+
+    .btn-action:hover {
+        background: var(--ke-blue);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--ke-blue);
+    }
+</style>
+
+<div class="container-fluid py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-11">
+
+            <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+                <div>
+                    <h2 class="fw-bold text-dark mb-0">Testing <span class="text-primary">Logbook</span></h2>
+                    <p class="text-muted small">Manage and audit all laboratory inspection history</p>
+                </div>
+                <a href="add_test.php" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" style="background: var(--ke-blue); border:none;">
+                    <i class="fas fa-plus-circle me-2"></i> New Test Record
+                </a>
+            </div>
+
+            <div class="card test-card">
+                <div class="test-header">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-microscope fa-lg me-3 text-white"></i>
+                        <h5 class="mb-0 fw-bold">All Material Inspection Records</h5>
+                    </div>
+                </div>
+
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">Tracking ID</th>
+                                    <th>Material & Date</th>
+                                    <th>Test Category</th>
+                                    <th>Verdict</th>
+                                    <th>Process Status</th>
+                                    <th>Engineer</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if ($tests->num_rows > 0): ?>
+                                    <?php while ($row = $tests->fetch_assoc()): ?>
+                                        <tr>
+                                            <td class="ps-4">
+                                                <span class="test-id-tag"><?php echo $row['test_id']; ?></span>
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold text-dark"><?php echo $row['product_id']; ?></div>
+                                                <div class="text-muted small"><i class="far fa-calendar-alt me-1"></i><?php echo date('d M, Y', strtotime($row['testing_date'])); ?></div>
+                                            </td>
+                                            <td>
+                                                <div class="small fw-bold text-primary text-uppercase"><?php echo $row['testing_department']; ?></div>
+                                                <div class="text-truncate" style="max-width: 150px;"><?php echo $row['test_type']; ?></div>
+                                            </td>
+                                            <td>
+                                                <?php if ($row['result'] == 'Pass'): ?>
+                                                    <span class="badge bg-success shadow-sm" style="border-radius: 4px;">PASS</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-danger shadow-sm" style="border-radius: 4px;">FAIL</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <?php if ($row['result'] == 'Pass'): ?>
+                                                    <div class="status-badge status-approved">
+                                                        <i class="fas fa-check-circle"></i> APPROVED
                                                     </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <strong>Test Type:</strong> <?php echo $row['test_type']; ?>
+                                                    <div class="text-muted mt-1" style="font-size: 0.65rem; font-weight: 600;"><?php echo $row['status']; ?></div>
+                                                <?php elseif ($row['result'] == 'Fail'): ?>
+                                                    <div class="status-badge status-rejected">
+                                                        <i class="fas fa-times-circle"></i> REJECTED
                                                     </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <strong>Department:</strong> <?php echo $row['testing_department']; ?>
+                                                    <div class="text-muted mt-1" style="font-size: 0.65rem; font-weight: 600; color: #c62828;"><?php echo $row['status']; ?></div>
+                                                <?php else: ?>
+                                                    <div class="status-badge status-review">
+                                                        <i class="fas fa-clock"></i> IN REVIEW
                                                     </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <strong>Testing Date:</strong> <?php echo date('d M, Y', strtotime($row['testing_date'])); ?>
-                                                    </div>
-                                                    <div class="col-md-12 mb-3">
-                                                        <strong>Testing Criteria:</strong><br>
-                                                        <div class="p-2 bg-light rounded mt-1"><?php echo nl2br($row['testing_criteria']); ?></div>
-                                                    </div>
-                                                    <div class="col-md-12 mb-3">
-                                                        <strong>Result:</strong> 
-                                                        <span class="badge <?php echo ($row['result'] == 'Pass') ? 'bg-success' : 'bg-danger'; ?>"><?php echo $row['result']; ?></span>
-                                                        - <?php echo $row['status']; ?>
-                                                    </div>
-                                                    <div class="col-md-12 mb-3">
-                                                        <strong>Remarks:</strong><br>
-                                                        <div class="p-2 bg-light rounded mt-1"><?php echo nl2br($row['remarks']); ?></div>
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <strong>Tester Name:</strong> <?php echo $row['tester_name']; ?>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <span class="small fw-bold text-secondary"><?php echo $row['tester_name']; ?></span>
+                                            </td>
+                                            <td class="text-center">
+                                                <button class="btn-action" data-bs-toggle="modal" data-bs-target="#viewModal<?php echo $row['id']; ?>">
+                                                    <i class="fas fa-search-plus"></i>
+                                                </button>
+
+                                                <div class="modal fade" id="viewModal<?php echo $row['id']; ?>" tabindex="-1" aria-hidden="true">
+                                                    <div class="modal-dialog modal-dialog-centered">
+                                                        <div class="modal-content" style="border-radius: 20px; border: none;">
+                                                            <div class="modal-header p-4" style="background: var(--ke-blue); color: white; border-bottom: 4px solid var(--ke-yellow); border-radius: 20px 20px 0 0;">
+                                                                <h5 class="modal-title fw-bold"><i class="fas fa-file-contract me-2"></i> Report Details</h5>
+                                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                            </div>
+                                                            <div class="modal-body p-4 text-start">
+                                                                <div class="mb-3 p-3 bg-light rounded-3 border-start border-4 border-primary">
+                                                                    <label class="small fw-bold text-muted text-uppercase mb-1 d-block">Testing Criteria</label>
+                                                                    <p class="mb-0 text-dark"><?php echo nl2br($row['testing_criteria']); ?></p>
+                                                                </div>
+                                                                <div class="mb-0 p-3 bg-light rounded-3 border-start border-4 border-warning">
+                                                                    <label class="small fw-bold text-muted text-uppercase mb-1 d-block">Technical Remarks</label>
+                                                                    <p class="mb-0 text-dark"><?php echo $row['remarks'] ? nl2br($row['remarks']) : 'No specific observations recorded.'; ?></p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
+                                            </td>
+                                        </tr>
+                                    <?php endwhile; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="7" class="text-center py-5">
+                                            <div class="text-muted">
+                                                <i class="fas fa-folder-open fa-3x mb-3 opacity-25"></i>
+                                                <p>No testing records available.</p>
                                             </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endwhile; ?>
-                <?php else: ?>
-                    <tr>
-                        <td colspan="9" class="text-center py-4">No testing records found.</td>
-                    </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                                        </td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
